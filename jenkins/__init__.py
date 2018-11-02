@@ -466,7 +466,7 @@ class Jenkins(object):
                 else:
                     raise JenkinsException('job[%s] does not exist' % name)
         except Exception as e:
-            raise JenkinsException('Error when request the all pipelinerun: %s' % e)
+            raise JenkinsException('Error when request the realtime console output: %s' % e)
 
     def get_all_pipelinerun(self, name):
         folder_url, short_name = self._get_job_folder(name)
