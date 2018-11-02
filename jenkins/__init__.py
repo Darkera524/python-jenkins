@@ -63,7 +63,6 @@ from six.moves.http_client import BadStatusLine
 from six.moves.urllib.error import URLError
 from six.moves.urllib.parse import quote, urlencode, urljoin, urlparse
 import xml.etree.ElementTree as ET
-
 from jenkins import plugins
 
 try:
@@ -152,6 +151,10 @@ CONFIG_CREDENTIAL = '%(folder_url)sjob/%(short_name)s/credentials/store/folder/'
 CREDENTIAL_INFO = '%(folder_url)sjob/%(short_name)s/credentials/store/folder/' \
                     'domain/%(domain_name)s/credential/%(name)s/api/json?depth=0'
 QUIET_DOWN = 'quietDown'
+All_PIPELINERUN = '%(folder_url)sjob/%(short_name)s/wfapi/runs?fullStages=true'
+STEP_LOG = '%(folder_url)sjob/%(short_name)s/%(build_id)d/execution/node/%(exe_id)d/wfapi/log'
+NEW_CONSOLE_OUTPUT = '%(folder_url)sjob/%(short_name)s/%(build_id)d/logText/progressiveHtml'
+
 
 # for testing only
 EMPTY_CONFIG_XML = '''<?xml version='1.0' encoding='UTF-8'?>
@@ -442,6 +445,55 @@ class Jenkins(object):
             raise JenkinsException('Could not fetch all builds from job[%s]' %
                                    data["name"])
         return data
+
+    def get_new_console_output(self, name, build_id):
+        folder_url, short_name = self._get_job_folder(name)
+        try:
+            resp = self.jenkins_request(requests.Request(
+                'POST', self._build_url(NEW_CONSOLE_OUTPUT, locals())
+            ))
+            response = resp.text
+            header = resp.headers
+            moreData = header.get("X-More-Data")
+            if moreData == None or moreData == "false":
+                if response:
+                    return response, False
+                else:
+                    raise JenkinsException('job[%s] does not exist' % name)
+            else:
+                if response:
+                    return response, True
+                else:
+                    raise JenkinsException('job[%s] does not exist' % name)
+        except Exception as e:
+            raise JenkinsException('Error when request the all pipelinerun: %s' % e)
+
+    def get_all_pipelinerun(self, name):
+        folder_url, short_name = self._get_job_folder(name)
+        try:
+            response = self.jenkins_open(requests.Request(
+                'GET', self._build_url(All_PIPELINERUN, locals())
+            ))
+            if response:
+                return json.loads(response)
+            else:
+                raise JenkinsException('job[%s] does not exist' % name)
+        except Exception as e:
+            raise JenkinsException('Error when request the all pipelinerun: %s' % e)
+
+    def get_step_log(self, name, build_id, exe_id):
+        folder_url, short_name = self._get_job_folder(name)
+        try:
+            response = self.jenkins_open(requests.Request(
+                'GET', self._build_url(STEP_LOG, locals())
+            ))
+            if response:
+                return json.loads(response)
+            else:
+                raise JenkinsException('job[%s] does not exist' % name)
+        except Exception as e:
+            raise JenkinsException('Error when request the log: %s' % e)
+
 
     def get_job_info(self, name, depth=0, fetch_all_builds=False):
         '''Get job information dictionary.
