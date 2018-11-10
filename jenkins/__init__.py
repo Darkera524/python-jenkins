@@ -154,6 +154,9 @@ QUIET_DOWN = 'quietDown'
 All_PIPELINERUN = '%(folder_url)sjob/%(short_name)s/wfapi/runs?fullStages=true'
 STEP_LOG = '%(folder_url)sjob/%(short_name)s/%(build_id)d/execution/node/%(exe_id)d/wfapi/log'
 NEW_CONSOLE_OUTPUT = '%(folder_url)sjob/%(short_name)s/%(build_id)d/logText/progressiveHtml'
+JOB_PIPELINE_STAGES = '%(folder_url)sjob/%(short_name)s/%(number)d/wfapi/describe'
+JOB_PIPELINE_NODE = "%(folder_url)sjob/%(short_name)s/%(number)d/execution/node/%(node)d/wfapi/describe"
+JOB_PIPELINE_STEP_LOG = "%(folder_url)sjob/%(short_name)s/%(number)d/execution/node/%(node)d/wfapi/log"
 
 
 # for testing only
@@ -494,6 +497,31 @@ class Jenkins(object):
         except Exception as e:
             raise JenkinsException('Error when request the log: %s' % e)
 
+    def get_pipeline_stages(self, name, number: int):
+        folder_url, short_name = self._get_job_folder(name)
+        try:
+            response = self.jenkins_open(requests.Request(
+                'GET', self._build_url(JOB_PIPELINE_STAGES, locals())
+            ))
+            if response:
+                return json.loads(response)
+            else:
+                raise JenkinsException('job[%s] does not exist' % name)
+        except Exception as e:
+            raise JenkinsException('Error when request the all pipelinerun: %s' % e)
+
+    def get_pipeline_node(self, name, number: int, node: int):
+        folder_url, short_name = self._get_job_folder(name)
+        try:
+            response = self.jenkins_open(requests.Request(
+                'GET', self._build_url(JOB_PIPELINE_NODE, locals())
+            ))
+            if response:
+                return json.loads(response)
+            else:
+                raise JenkinsException('job[%s] does not exist' % name)
+        except Exception as e:
+            raise JenkinsException('Error when request the all pipelinerun: %s' % e)
 
     def get_job_info(self, name, depth=0, fetch_all_builds=False):
         '''Get job information dictionary.
