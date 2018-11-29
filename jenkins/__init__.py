@@ -158,6 +158,10 @@ JOB_PIPELINE_STAGES = '%(folder_url)sjob/%(short_name)s/%(number)d/wfapi/describ
 JOB_PIPELINE_NODE = "%(folder_url)sjob/%(short_name)s/%(number)d/execution/node/%(node)d/wfapi/describe"
 JOB_PIPELINE_STEP_LOG = "%(folder_url)sjob/%(short_name)s/%(number)d/execution/node/%(node)d/wfapi/log"
 
+SYSTEM_CREDENTIALS_LIST = "/credentials/store/system/domain/_/"
+SYSTEM_CREDENTIAL_CREATE = "/credentials/store/system/domain/_/createCredentials/"
+SYSTEM_CREDENTIAL_QUERY = "/credentials/store/system/domain/_/credential/%{credential}s/"
+SYSTEM_CREDENTIAL_UPDATE = "/credentials/store/system/domain/_/credential/%{credential}s/update"
 
 # for testing only
 EMPTY_CONFIG_XML = '''<?xml version='1.0' encoding='UTF-8'?>
@@ -470,6 +474,15 @@ class Jenkins(object):
                     raise JenkinsException('job[%s] does not exist' % name)
         except Exception as e:
             raise JenkinsException('Error when request the realtime console output: %s' % e)
+
+    def system_credentials_list(self):
+        try:
+            response = self.jenkins_open(requests.Request(
+                'GET', self._build_url(SYSTEM_CREDENTIALS_LIST, locals())
+            ))
+            return response
+        except Exception as e:
+            raise JenkinsException('Error when request the all credentials: %s' % e)
 
     def get_all_pipelinerun(self, name):
         folder_url, short_name = self._get_job_folder(name)
