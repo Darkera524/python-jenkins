@@ -484,6 +484,24 @@ class Jenkins(object):
         except Exception as e:
             raise JenkinsException('Error when request the all credentials: %s' % e)
 
+    def system_credentials_create(self):
+        username = "apicredentialss"
+        password = "P@$$W0rds"
+        description = "apicredentialss"
+        # https://www.greenreedtech.com/creating-jenkins-credentials-via-the-rest-api/
+        json_data = {"json": json.dumps({"credentials": {"scope": "GLOBAL", "username": username, "password": password,
+                                                         "description": description,
+                                                         "stapler-class": "com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl"}})}
+        try:
+            response = self.jenkins_open(requests.Request(
+                'POST', self._build_url(SYSTEM_CREDENTIAL_CREATE, locals()), data=json_data)
+            )
+            return response
+        except Exception as e:
+            if isinstance(e, NotFoundException):
+                return True
+            raise JenkinsException('Error when create credentials: %s' % e)
+
     def get_all_pipelinerun(self, name):
         folder_url, short_name = self._get_job_folder(name)
         try:
