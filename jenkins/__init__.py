@@ -161,7 +161,9 @@ JOB_PIPELINE_STEP_LOG = "%(folder_url)sjob/%(short_name)s/%(number)d/execution/n
 SYSTEM_CREDENTIALS_LIST = "/credentials/store/system/domain/_/"
 SYSTEM_CREDENTIAL_CREATE = "/credentials/store/system/domain/_/createCredentials/"
 SYSTEM_CREDENTIAL_QUERY = "/credentials/store/system/domain/_/credential/%{credential}s/"
-SYSTEM_CREDENTIAL_UPDATE = "/credentials/store/system/domain/_/credential/%{credential}s/update"
+#SYSTEM_CREDENTIAL_UPDATE = "/credentials/store/system/domain/_/credential/%{credential}s/update"
+SYSTEM_CREDENTIAL_DELETE = "/credentials/store/system/domain/_/credential/%(credentialid)s/doDelete"
+SYSTEM_CREDENTIAL_UPDATE = "/credentials/store/system/domain/_/credential/%(credentialid)s/updateSubmit"
 
 # for testing only
 EMPTY_CONFIG_XML = '''<?xml version='1.0' encoding='UTF-8'?>
@@ -496,6 +498,32 @@ class Jenkins(object):
             if isinstance(e, NotFoundException):
                 return True
             raise JenkinsException('Error when create credentials: %s' % e)
+
+    def system_credentials_delete(self, credentialid):
+        # https://www.greenreedtech.com/creating-jenkins-credentials-via-the-rest-api/
+        json_data = {}
+        try:
+            response = self.jenkins_open(requests.Request(
+                'POST', self._build_url(SYSTEM_CREDENTIAL_DELETE, locals()), data=json_data)
+            )
+            return response
+        except Exception as e:
+            if isinstance(e, NotFoundException):
+                return True
+            raise JenkinsException('Error when delete credentials: %s' % e)
+
+    def system_credentials_update(self, credentialid, cred):
+        # https://www.greenreedtech.com/creating-jenkins-credentials-via-the-rest-api/
+        json_data = {"json": json.dumps({"credentials": cred})}
+        try:
+            response = self.jenkins_open(requests.Request(
+                'POST', self._build_url(SYSTEM_CREDENTIAL_UPDATE, locals()), data=json_data)
+            )
+            return response
+        except Exception as e:
+            if isinstance(e, NotFoundException):
+                return True
+            raise JenkinsException('Error when update credentials: %s' % e)
 
     def get_all_pipelinerun(self, name):
         folder_url, short_name = self._get_job_folder(name)
