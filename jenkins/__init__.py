@@ -165,6 +165,8 @@ SYSTEM_CREDENTIAL_QUERY = "/credentials/store/system/domain/_/credential/%{crede
 SYSTEM_CREDENTIAL_DELETE = "/credentials/store/system/domain/_/credential/%(credentialid)s/doDelete"
 SYSTEM_CREDENTIAL_UPDATE = "/credentials/store/system/domain/_/credential/%(credentialid)s/updateSubmit"
 
+CREDENTIAL_GIT_CHECK = "/job/%(name)s/descriptorByName/hudson.plugins.git.UserRemoteConfig/checkUrl"
+
 # for testing only
 EMPTY_CONFIG_XML = '''<?xml version='1.0' encoding='UTF-8'?>
 <project>
@@ -523,6 +525,19 @@ class Jenkins(object):
         except Exception as e:
             if isinstance(e, NotFoundException):
                 return True
+            raise JenkinsException('Error when update credentials: %s' % e)
+
+    def check_git_url(self, name, credentialid, value):
+        json_data = {"value": value,
+                     "credentialsId": credentialid}
+        try:
+            response = self.jenkins_open(requests.Request(
+                'POST', self._build_url(CREDENTIAL_GIT_CHECK, locals()), data=json_data)
+            )
+            return response
+        except Exception as e:
+            if isinstance(e, TimeoutException):
+                raise e
             raise JenkinsException('Error when update credentials: %s' % e)
 
     def get_all_pipelinerun(self, name):
