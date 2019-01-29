@@ -166,7 +166,7 @@ SYSTEM_CREDENTIAL_DELETE = "/credentials/store/system/domain/_/credential/%(cred
 SYSTEM_CREDENTIAL_UPDATE = "/credentials/store/system/domain/_/credential/%(credentialid)s/updateSubmit"
 
 CREDENTIAL_GIT_CHECK = "/job/%(name)s/descriptorByName/hudson.plugins.git.UserRemoteConfig/checkUrl"
-
+TIMER_TRIGGER_CHECK = "/job/%(name)s/descriptorByName/hudson.triggers.TimerTriggereckSpec?value=%(value)s"
 # for testing only
 EMPTY_CONFIG_XML = '''<?xml version='1.0' encoding='UTF-8'?>
 <project>
@@ -539,6 +539,19 @@ class Jenkins(object):
             if isinstance(e, TimeoutException):
                 raise e
             raise JenkinsException('Error when update credentials: %s' % e)
+
+    def check_timer_trigger(self, name, value):
+        """
+        :param name: job name
+        :param value: cron str
+        :return:
+        """
+        folder_url, short_name = self._get_job_folder(name)
+        response = self.jenkins_open(requests.Request(
+            'GET', self._build_url(TIMER_TRIGGER_CHECK, locals())
+        ))
+        return response
+
 
     def get_all_pipelinerun(self, name):
         folder_url, short_name = self._get_job_folder(name)
