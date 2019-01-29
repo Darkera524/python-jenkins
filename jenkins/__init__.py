@@ -166,7 +166,7 @@ SYSTEM_CREDENTIAL_DELETE = "/credentials/store/system/domain/_/credential/%(cred
 SYSTEM_CREDENTIAL_UPDATE = "/credentials/store/system/domain/_/credential/%(credentialid)s/updateSubmit"
 
 CREDENTIAL_GIT_CHECK = "/job/%(name)s/descriptorByName/hudson.plugins.git.UserRemoteConfig/checkUrl"
-TIMER_TRIGGER_CHECK = "/job/%(name)s/descriptorByName/hudson.triggers.TimerTriggereckSpec?value=%(value)s"
+TIMER_TRIGGER_CHECK = "/job/%(name)s/descriptorByName/hudson.triggers.TimerTrigger/checkSpec?value=%(value)s"
 # for testing only
 EMPTY_CONFIG_XML = '''<?xml version='1.0' encoding='UTF-8'?>
 <project>
